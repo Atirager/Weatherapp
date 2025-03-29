@@ -5,9 +5,8 @@ const input = document.getElementById("cityInput");
 const suggestionsList = document.getElementById("suggestions");
 const weatherIcon = document.getElementById("weatherIcon");
 
-updateHistory(); // Load history when app starts
+updateHistory(); // Load saved history
 
-// Enter key triggers search
 input.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     getWeather();
@@ -15,7 +14,7 @@ input.addEventListener("keydown", (e) => {
   }
 });
 
-// City suggestions using GeoDB + RapidAPI
+// City autocomplete
 input.addEventListener("input", async () => {
   const query = input.value.trim();
   if (query.length < 2) {
@@ -51,12 +50,10 @@ input.addEventListener("input", async () => {
   }
 });
 
-// Dark mode toggle
 document.getElementById("toggleMode").addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
 });
 
-// Fetch weather and forecast
 async function getWeather(cityOverride = null) {
   const city = cityOverride || input.value;
   if (!city) return;
@@ -77,7 +74,6 @@ async function getWeather(cityOverride = null) {
     const weatherData = await weatherRes.json();
     const forecastData = await forecastRes.json();
 
-    // Show current weather
     document.getElementById("weatherResult").innerHTML = `
       <h2>${weatherData.name}, ${weatherData.sys.country}</h2>
       <p>Temperature: ${weatherData.main.temp}°C</p>
@@ -87,29 +83,30 @@ async function getWeather(cityOverride = null) {
       <p>Condition: ${weatherData.weather[0].main}</p>
     `;
 
-    // Set animated icon + background
-    setAnimatedIcon(weatherData.weather[0].main);
     setWeatherBackground(weatherData.weather[0].main);
+    setAnimatedIcon(weatherData.weather[0].main);
 
-    // Show 5-day forecast
     const forecastEl = document.getElementById("forecast");
     forecastEl.innerHTML = "";
+
     for (let i = 0; i < forecastData.list.length; i += 8) {
       const day = forecastData.list[i];
       const date = new Date(day.dt * 1000).toDateString();
+      const condition = day.weather[0].main;
+      const icon = getWeatherEmoji(condition);
+
       forecastEl.innerHTML += `
         <div class="forecast-day">
           <p>${date}</p>
-          <p>${day.weather[0].main}</p>
+          <p>${icon} ${condition}</p>
           <p>${day.main.temp}°C</p>
         </div>
       `;
     }
 
-    // Save to search history
     if (!history.includes(city)) {
       history.unshift(city);
-      history = history.slice(0, 5); // keep last 5
+      history = history.slice(0, 5);
       updateHistory();
     }
   } catch (err) {
@@ -121,7 +118,6 @@ async function getWeather(cityOverride = null) {
   }
 }
 
-// Update the history in UI + localStorage
 function updateHistory() {
   const ul = document.getElementById("searchHistory");
   ul.innerHTML = "";
@@ -134,12 +130,11 @@ function updateHistory() {
   localStorage.setItem("searchHistory", JSON.stringify(history));
 }
 
-// Set dynamic background color
 function setWeatherBackground(condition) {
   const body = document.body;
   switch (condition.toLowerCase()) {
     case "clear":
-      body.style.background = "linear-gradient(to top, #fceabb, #f8b500)";
+      body.style.background = "linear-gradient(to top, #fceabb, #f3b343)";
       break;
     case "clouds":
       body.style.background = "linear-gradient(to right, #bdc3c7, #2c3e50)";
@@ -152,7 +147,7 @@ function setWeatherBackground(condition) {
       body.style.background = "linear-gradient(to right, #0f2027, #203a43, #2c5364)";
       break;
     case "snow":
-      body.style.background = "linear-gradient(to right, #e6dada, #274046)";
+      body.style.background = "linear-gradient(to right, #d7d2cc, #304352)";
       break;
     case "mist":
     case "fog":
@@ -164,7 +159,6 @@ function setWeatherBackground(condition) {
   }
 }
 
-// Set animated icon using LottieFiles
 function setAnimatedIcon(condition) {
   const iconMap = {
     clear: "https://assets4.lottiefiles.com/packages/lf20_jzcldbm3.json",
@@ -181,4 +175,19 @@ function setAnimatedIcon(condition) {
   const iconURL = iconMap[condition.toLowerCase()] || iconMap["clear"];
   weatherIcon.setAttribute("src", iconURL);
   weatherIcon.style.display = "block";
+}
+
+function getWeatherEmoji(condition) {
+  switch (condition.toLowerCase()) {
+    case "clear": return "☀️";
+    case "clouds": return "☁️";
+    case "rain": return "🌧️";
+    case "drizzle": return "🌦️";
+    case "thunderstorm": return "⛈️";
+    case "snow": return "❄️";
+    case "mist":
+    case "fog":
+    case "haze": return "🌫️";
+    default: return "🌈";
+  }
 }
