@@ -12,7 +12,7 @@ input.addEventListener("keydown", (e) => {
   }
 });
 
-// 🔍 Live city suggestions from Teleport API
+// 🔍 City autocomplete using Teleport API
 input.addEventListener("input", async () => {
   const query = input.value.trim();
   if (query.length < 2) {
@@ -26,7 +26,6 @@ input.addEventListener("input", async () => {
     suggestionsList.innerHTML = "";
 
     const cities = data._embedded["city:search-results"].slice(0, 5);
-
     if (cities.length === 0) {
       suggestionsList.style.display = "none";
       return;
@@ -54,7 +53,7 @@ document.getElementById("toggleMode").addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
 });
 
-// 🌤️ Get weather + forecast
+// 🌤️ Get current weather + forecast
 async function getWeather(cityOverride = null) {
   const city = cityOverride || input.value;
   if (!city) return;
@@ -75,7 +74,7 @@ async function getWeather(cityOverride = null) {
     const weatherData = await weatherRes.json();
     const forecastData = await forecastRes.json();
 
-    // ☀️ Show current weather
+    // Display current weather
     document.getElementById("weatherResult").innerHTML = `
       <h2>${weatherData.name}, ${weatherData.sys.country}</h2>
       <p>Temperature: ${weatherData.main.temp}°C</p>
@@ -86,7 +85,7 @@ async function getWeather(cityOverride = null) {
       <img src="https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png" alt="icon"/>
     `;
 
-    // 📆 5-Day Forecast (every 8th 3-hour reading)
+    // Display 5-day forecast (1 per day, every 8th 3-hour entry)
     const forecastEl = document.getElementById("forecast");
     forecastEl.innerHTML = "";
 
@@ -103,7 +102,7 @@ async function getWeather(cityOverride = null) {
       `;
     }
 
-    // 📌 Add to history
+    // Add to search history
     if (!history.includes(city)) {
       history.unshift(city);
       updateHistory();
@@ -116,7 +115,7 @@ async function getWeather(cityOverride = null) {
   }
 }
 
-// 🕘 Show search history
+// 🔁 Update history list
 function updateHistory() {
   const ul = document.getElementById("searchHistory");
   ul.innerHTML = "";
