@@ -1,3 +1,4 @@
+Chart.register(ChartDataLabels);
 const apiKey = "05b81f8b80065742683e5d0cd6632534";
 let history = JSON.parse(localStorage.getItem("searchHistory")) || [];
 let cache = JSON.parse(localStorage.getItem("weatherCache")) || {};
@@ -115,13 +116,13 @@ async function getWeather(cityOverride = null) {
 function renderWeather({ weatherData, forecastData, city }) {
   document.getElementById("loading").style.display = "none";
   document.getElementById("weatherResult").innerHTML = `
-    <h2>${weatherData.name}, ${weatherData.sys.country}</h2>
-    <p>Temperature: ${weatherData.main.temp}°${unit === "metric" ? "C" : "F"}</p>
-    <p>Feels Like: ${weatherData.main.feels_like}°</p>
-    <p>Humidity: ${weatherData.main.humidity}%</p>
-    <p>Wind: ${weatherData.wind.speed} ${unit === "metric" ? "m/s" : "mph"}</p>
-    <p>Condition: ${weatherData.weather[0].main}</p>
-  `;
+  	<h2>${weatherData.name}, ${weatherData.sys.country}</h2>
+  	<p>🌡️ Temperature: ${weatherData.main.temp}°${unit === "metric" ? "C" : "F"}</p>
+ 	<p>🤗 Feels Like: ${weatherData.main.feels_like}°</p>
+ 	<p>💧 Humidity: ${weatherData.main.humidity}%</p>
+  	<p>💨 Wind: ${weatherData.wind.speed} ${unit === "metric" ? "m/s" : "mph"}</p>
+  	<p>🌈 Condition: ${weatherData.weather[0].main}</p>
+	`;
 
   const forecast = document.getElementById("forecast");
   const labels = [];
@@ -156,6 +157,8 @@ const shortLabels = labels.map(getWeekday);
 
 if (tempChart) tempChart.destroy();
 
+Chart.register(ChartDataLabels);
+
 tempChart = new Chart(chartEl, {
   type: "bar",
   data: {
@@ -164,12 +167,12 @@ tempChart = new Chart(chartEl, {
       {
         label: `Min Temp (${unit === "metric" ? "°C" : "°F"})`,
         data: minTemps,
-        backgroundColor: "rgba(135, 206, 250, 0.7)", // soft sky blue
+        backgroundColor: "rgba(135, 206, 250, 0.7)",
       },
       {
         label: `Max Temp (${unit === "metric" ? "°C" : "°F"})`,
         data: maxTemps,
-        backgroundColor: "rgba(255, 105, 97, 0.7)", // soft salmon pink
+        backgroundColor: "rgba(255, 105, 97, 0.7)",
       },
     ],
   },
@@ -186,24 +189,17 @@ tempChart = new Chart(chartEl, {
           label: (ctx) => `${ctx.dataset.label}: 🌡️ ${ctx.parsed.y}°`,
         },
       },
+      datalabels: {
+        anchor: 'end',
+        align: 'top',
+        color: document.body.classList.contains("dark-mode") ? '#fff' : '#000',
+        font: { weight: 'bold' },
+        formatter: (value) => `${value}°`,
+      }
     },
     scales: {
-      x: {
-        ticks: {
-          color: document.body.classList.contains("dark-mode") ? "#ccc" : "#222",
-        },
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        ticks: {
-          color: document.body.classList.contains("dark-mode") ? "#ccc" : "#222",
-        },
-        grid: {
-          color: "rgba(200, 200, 200, 0.2)",
-        },
-      },
+      x: { ... },
+      y: { ... },
     },
   },
 });

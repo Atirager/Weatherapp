@@ -19,10 +19,11 @@ body.dark-mode {
 .weather-container {
   max-width: 550px;
   margin: auto;
-  background: #fff;
+  background: #f0f7ff; /* soft pastel blue */
   padding: 1rem;
   border-radius: 12px;
-  box-shadow: 0 0 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.08);
+  transition: background 0.3s ease;
 }
 
 body.dark-mode .weather-container {
