@@ -1,17 +1,19 @@
+// Register Chart.js plugin for bar labels
 Chart.register(ChartDataLabels);
+
 const apiKey = "05b81f8b80065742683e5d0cd6632534";
 let history = JSON.parse(localStorage.getItem("searchHistory")) || [];
 let cache = JSON.parse(localStorage.getItem("weatherCache")) || {};
 let unit = localStorage.getItem("unit") || "metric";
+
 const input = document.getElementById("cityInput");
 const suggestionsList = document.getElementById("suggestions");
 const chartEl = document.getElementById("tempChart").getContext("2d");
 let tempChart;
 
-// Set unit dropdown
 document.getElementById("unitSelect").value = unit;
 
-// Dark mode toggle
+// Toggle dark mode
 document.getElementById("toggleMode").addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
   if (tempChart) tempChart.destroy();
@@ -25,7 +27,7 @@ document.getElementById("unitSelect").addEventListener("change", (e) => {
   getWeather();
 });
 
-// Search history update
+// Search history
 function updateHistory() {
   const ul = document.getElementById("searchHistory");
   ul.innerHTML = "";
@@ -112,17 +114,17 @@ async function getWeather(cityOverride = null) {
   }
 }
 
-// Render UI
+// Render weather and chart
 function renderWeather({ weatherData, forecastData, city }) {
   document.getElementById("loading").style.display = "none";
   document.getElementById("weatherResult").innerHTML = `
-  	<h2>${weatherData.name}, ${weatherData.sys.country}</h2>
-  	<p>🌡️ Temperature: ${weatherData.main.temp}°${unit === "metric" ? "C" : "F"}</p>
- 	<p>🤗 Feels Like: ${weatherData.main.feels_like}°</p>
- 	<p>💧 Humidity: ${weatherData.main.humidity}%</p>
-  	<p>💨 Wind: ${weatherData.wind.speed} ${unit === "metric" ? "m/s" : "mph"}</p>
-  	<p>🌈 Condition: ${weatherData.weather[0].main}</p>
-	`;
+    <h2>${weatherData.name}, ${weatherData.sys.country}</h2>
+    <p>🌡️ Temperature: ${weatherData.main.temp}°${unit === "metric" ? "C" : "F"}</p>
+    <p>🤗 Feels Like: ${weatherData.main.feels_like}°</p>
+    <p>💧 Humidity: ${weatherData.main.humidity}%</p>
+    <p>💨 Wind: ${weatherData.wind.speed} ${unit === "metric" ? "m/s" : "mph"}</p>
+    <p>🌈 Condition: ${weatherData.weather[0].main}</p>
+  `;
 
   const forecast = document.getElementById("forecast");
   const labels = [];
@@ -149,62 +151,76 @@ function renderWeather({ weatherData, forecastData, city }) {
     maxTemps.push(max);
   }
 
-  // Shorten date to weekday only
-const getWeekday = (dateStr) =>
-  new Date(dateStr).toLocaleDateString("en-US", { weekday: "short" });
+  if (tempChart) tempChart.destroy();
 
-const shortLabels = labels.map(getWeekday);
+  const shortLabels = labels.map((dateStr) =>
+    new Date(dateStr).toLocaleDateString("en-US", { weekday: "short" })
+  );
 
-if (tempChart) tempChart.destroy();
-
-Chart.register(ChartDataLabels);
-
-tempChart = new Chart(chartEl, {
-  type: "bar",
-  data: {
-    labels: shortLabels,
-    datasets: [
-      {
-        label: `Min Temp (${unit === "metric" ? "°C" : "°F"})`,
-        data: minTemps,
-        backgroundColor: "rgba(135, 206, 250, 0.7)",
+  tempChart = new Chart(chartEl, {
+    type: "bar",
+    data: {
+      labels: shortLabels,
+      datasets: [
+        {
+          label: `Min Temp (${unit === "metric" ? "°C" : "°F"})`,
+          data: minTemps,
+          backgroundColor: "rgba(135, 206, 250, 0.7)", // Sky blue
+        },
+        {
+          label: `Max Temp (${unit === "metric" ? "°C" : "°F"})`,
+          data: maxTemps,
+          backgroundColor: "rgba(255, 105, 97, 0.7)", // Salmon pink
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: {
+            color: document.body.classList.contains("dark-mode") ? "#eee" : "#222",
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.dataset.label}: 🌡️ ${ctx.parsed.y}°`,
+          },
+        },
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          color: document.body.classList.contains("dark-mode") ? '#fff' : '#000',
+          font: {
+            weight: 'bold',
+          },
+          formatter: (value) => `${value}°`
+        }
       },
-      {
-        label: `Max Temp (${unit === "metric" ? "°C" : "°F"})`,
-        data: maxTemps,
-        backgroundColor: "rgba(255, 105, 97, 0.7)",
-      },
-    ],
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: {
-        labels: {
-          color: document.body.classList.contains("dark-mode") ? "#eee" : "#222",
+      scales: {
+        x: {
+          ticks: {
+            color: document.body.classList.contains("dark-mode") ? "#ccc" : "#222",
+          },
+          grid: {
+            display: false,
+          },
+        },
+        y: {
+          ticks: {
+            color: document.body.classList.contains("dark-mode") ? "#ccc" : "#222",
+          },
+          grid: {
+            color: "rgba(200, 200, 200, 0.2)",
+          },
         },
       },
-      tooltip: {
-        callbacks: {
-          label: (ctx) => `${ctx.dataset.label}: 🌡️ ${ctx.parsed.y}°`,
-        },
-      },
-      datalabels: {
-        anchor: 'end',
-        align: 'top',
-        color: document.body.classList.contains("dark-mode") ? '#fff' : '#000',
-        font: { weight: 'bold' },
-        formatter: (value) => `${value}°`,
-      }
     },
-    scales: {
-      x: { ... },
-      y: { ... },
-    },
-  },
-});
+    plugins: [ChartDataLabels]
+  });
 }
 
+// Emoji based on condition
 function getEmoji(cond) {
   const c = cond.toLowerCase();
   if (c.includes("clear")) return "☀️";
