@@ -8,35 +8,45 @@
   <link rel="icon" href="weather-icon.png" />
   <link rel="manifest" href="manifest.json" />
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="weather-container">
     <h1>🌤️ Weather App</h1>
-    <button id="toggleMode">🌓 Toggle Dark Mode</button>
+
+    <div class="controls">
+      <button id="toggleMode">🌓</button>
+      <select id="unitSelect">
+        <option value="metric">°C</option>
+        <option value="imperial">°F</option>
+      </select>
+    </div>
 
     <div class="input-group">
-      <input type="text" id="cityInput" placeholder="Search for a city..." autocomplete="off" />
+      <input type="text" id="cityInput" placeholder="Search city..." autocomplete="off" />
       <ul id="suggestions"></ul>
-      <button onclick="getWeather()">🔍 Get Weather</button>
+      <button onclick="getWeather()">🔍</button>
     </div>
 
     <div id="loading">Loading...</div>
 
-    <lottie-player id="weatherIcon" autoplay loop style="width: 150px; margin: 20px auto; display: none;"></lottie-player>
+    <lottie-player id="weatherIcon" autoplay loop style="width: 100px; margin: 10px auto; display: none;"></lottie-player>
 
     <div id="weatherResult"></div>
 
-    <div id="forecastContainer">
-      <h3>5-Day Forecast</h3>
-      <div id="forecast"></div>
-    </div>
+    <h3>5-Day Forecast</h3>
+    <canvas id="tempChart"></canvas>
+    <div id="forecast"></div>
 
-    <div id="historySection">
-      <h3>Search History</h3>
-      <ul id="searchHistory"></ul>
-    </div>
+    <h3>Search History</h3>
+    <ul id="searchHistory"></ul>
   </div>
 
   <script src="script.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
+    }
+  </script>
 </body>
 </html>
