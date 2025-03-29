@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weather App</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="weather-icon.png" />
+  <link rel="manifest" href="manifest.json" />
 </head>
 <body>
   <div class="weather-container">
@@ -12,7 +14,13 @@
     <button id="toggleMode">Toggle Dark Mode</button>
     <input type="text" id="cityInput" placeholder="Enter city name" />
     <button onclick="getWeather()">Get Weather</button>
+    <div id="loading">Loading...</div>
     <div id="weatherResult"></div>
+
+    <div id="forecastContainer">
+      <h3>10-Day Forecast</h3>
+      <div id="forecast"></div>
+    </div>
 
     <div id="historySection">
       <h3>Search History</h3>
@@ -21,5 +29,10 @@
   </div>
 
   <script src="script.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
 </body>
 </html>
