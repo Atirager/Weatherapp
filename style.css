@@ -6,9 +6,10 @@
 
 body {
   font-family: 'Segoe UI', sans-serif;
-  background: #f2f2f2;
+  background: #e9f4fc;
   color: #333;
   padding: 1rem;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 body.dark-mode {
@@ -19,7 +20,7 @@ body.dark-mode {
 .weather-container {
   max-width: 550px;
   margin: auto;
-  background: #f0f7ff; /* soft pastel blue */
+  background: #f0f7ff; /* Soft pastel background */
   padding: 1rem;
   border-radius: 12px;
   box-shadow: 0 0 16px rgba(0, 0, 0, 0.08);
@@ -61,6 +62,7 @@ button {
   color: white;
   border-radius: 6px;
   cursor: pointer;
+  font-weight: bold;
 }
 
 #suggestions {
@@ -88,6 +90,7 @@ button {
 #weatherResult {
   text-align: center;
   margin: 1rem 0;
+  font-size: 1rem;
 }
 
 #forecast {
@@ -115,11 +118,12 @@ body.dark-mode .forecast-day {
   text-decoration: underline;
   margin: 0.25rem 0;
   text-align: center;
+  font-size: 0.9rem;
 }
 
 canvas {
   max-width: 100%;
-  background: #f5faff; /* Soft sky blue */
+  background: #f5faff;
   border-radius: 10px;
   padding: 1rem;
   margin: 1rem 0;
