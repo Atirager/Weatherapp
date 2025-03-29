@@ -148,53 +148,65 @@ function renderWeather({ weatherData, forecastData, city }) {
     maxTemps.push(max);
   }
 
-  if (tempChart) tempChart.destroy();
+  // Shorten date to weekday only
+const getWeekday = (dateStr) =>
+  new Date(dateStr).toLocaleDateString("en-US", { weekday: "short" });
 
-  tempChart = new Chart(chartEl, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: `Min Temp (${unit === "metric" ? "°C" : "°F"})`,
-          data: minTemps,
-          backgroundColor: "rgba(135,206,250,0.7)",
-        },
-        {
-          label: `Max Temp (${unit === "metric" ? "°C" : "°F"})`,
-          data: maxTemps,
-          backgroundColor: "rgba(255,99,132,0.7)",
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          labels: {
-            color: document.body.classList.contains("dark-mode") ? "#eee" : "#222",
-          },
-        },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: 🌡️ ${ctx.parsed.y}°`,
-          },
+const shortLabels = labels.map(getWeekday);
+
+if (tempChart) tempChart.destroy();
+
+tempChart = new Chart(chartEl, {
+  type: "bar",
+  data: {
+    labels: shortLabels,
+    datasets: [
+      {
+        label: `Min Temp (${unit === "metric" ? "°C" : "°F"})`,
+        data: minTemps,
+        backgroundColor: "rgba(135, 206, 250, 0.7)", // soft sky blue
+      },
+      {
+        label: `Max Temp (${unit === "metric" ? "°C" : "°F"})`,
+        data: maxTemps,
+        backgroundColor: "rgba(255, 105, 97, 0.7)", // soft salmon pink
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        labels: {
+          color: document.body.classList.contains("dark-mode") ? "#eee" : "#222",
         },
       },
-      scales: {
-        x: {
-          ticks: {
-            color: document.body.classList.contains("dark-mode") ? "#ccc" : "#222",
-          },
-        },
-        y: {
-          ticks: {
-            color: document.body.classList.contains("dark-mode") ? "#ccc" : "#222",
-          },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => `${ctx.dataset.label}: 🌡️ ${ctx.parsed.y}°`,
         },
       },
     },
-  });
+    scales: {
+      x: {
+        ticks: {
+          color: document.body.classList.contains("dark-mode") ? "#ccc" : "#222",
+        },
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        ticks: {
+          color: document.body.classList.contains("dark-mode") ? "#ccc" : "#222",
+        },
+        grid: {
+          color: "rgba(200, 200, 200, 0.2)",
+        },
+      },
+    },
+  },
+});
 }
 
 function getEmoji(cond) {
