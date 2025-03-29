@@ -1,4 +1,4 @@
-const apiKey = "05b81f8b80065742683e5d0cd6632534";
+const apiKey = "05b81f8b80065742683e5d0cd6632534"; // OpenWeatherMap API key
 let history = [];
 
 const input = document.getElementById("cityInput");
@@ -12,7 +12,7 @@ input.addEventListener("keydown", (e) => {
   }
 });
 
-// 🔍 City autocomplete using Teleport API
+// 🔍 City autocomplete using GeoDB Cities API (RapidAPI)
 input.addEventListener("input", async () => {
   const query = input.value.trim();
   if (query.length < 2) {
@@ -21,19 +21,27 @@ input.addEventListener("input", async () => {
   }
 
   try {
-    const res = await fetch(`https://api.teleport.org/api/cities/?search=${query}`);
+    const res = await fetch(`https://wft-geo-db.p.rapidapi.com/v1/geo/cities?limit=5&namePrefix=${query}`, {
+      method: "GET",
+      headers: {
+        "X-RapidAPI-Key": "9828ac0080msh955cea759b9097fp1fda40jsnd9b57c63454d", // ← Your RapidAPI key
+        "X-RapidAPI-Host": "wft-geo-db.p.rapidapi.com"
+      }
+    });
+
     const data = await res.json();
     suggestionsList.innerHTML = "";
 
-    const cities = data._embedded["city:search-results"].slice(0, 5);
+    const cities = data.data;
+
     if (cities.length === 0) {
       suggestionsList.style.display = "none";
       return;
     }
 
-    cities.forEach((item) => {
+    cities.forEach((city) => {
       const li = document.createElement("li");
-      li.textContent = item.matching_full_name;
+      li.textContent = `${city.city}, ${city.country}`;
       li.onclick = () => {
         input.value = li.textContent;
         suggestionsList.style.display = "none";
@@ -85,7 +93,7 @@ async function getWeather(cityOverride = null) {
       <img src="https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png" alt="icon"/>
     `;
 
-    // Display 5-day forecast (1 per day, every 8th 3-hour entry)
+    // Display 5-day forecast (every 8th 3-hour reading)
     const forecastEl = document.getElementById("forecast");
     forecastEl.innerHTML = "";
 
@@ -115,7 +123,7 @@ async function getWeather(cityOverride = null) {
   }
 }
 
-// 🔁 Update history list
+// 🔁 Update search history
 function updateHistory() {
   const ul = document.getElementById("searchHistory");
   ul.innerHTML = "";
