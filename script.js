@@ -18,7 +18,7 @@ async function getWeather(cityOverride = null) {
 
   try {
     const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
-    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast/daily?q=${city}&cnt=10&appid=${apiKey}&units=metric`;
+    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`;
 
     const [weatherRes, forecastRes] = await Promise.all([
       fetch(weatherUrl),
@@ -30,6 +30,7 @@ async function getWeather(cityOverride = null) {
     const weatherData = await weatherRes.json();
     const forecastData = await forecastRes.json();
 
+    // Display current weather
     document.getElementById("weatherResult").innerHTML = `
       <h2>${weatherData.name}, ${weatherData.sys.country}</h2>
       <p>Temperature: ${weatherData.main.temp}°C</p>
@@ -40,19 +41,24 @@ async function getWeather(cityOverride = null) {
       <img src="https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png" alt="icon"/>
     `;
 
+    // Display simplified 5-day forecast
     const forecastEl = document.getElementById("forecast");
     forecastEl.innerHTML = "";
-    forecastData.list.forEach(day => {
+
+    for (let i = 0; i < forecastData.list.length; i += 8) {
+      const day = forecastData.list[i];
       const date = new Date(day.dt * 1000).toDateString();
+
       forecastEl.innerHTML += `
         <div class="forecast-day">
           <p>${date}</p>
           <p>${day.weather[0].main}</p>
-          <p>${day.temp.day}°C</p>
+          <p>${day.main.temp}°C</p>
         </div>
       `;
-    });
+    }
 
+    // Add to history
     if (!history.includes(city)) {
       history.unshift(city);
       updateHistory();
