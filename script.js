@@ -4,6 +4,7 @@ let history = [];
 const input = document.getElementById("cityInput");
 const suggestionsList = document.getElementById("suggestions");
 
+// ENTER key triggers search
 input.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     getWeather();
@@ -11,32 +12,49 @@ input.addEventListener("keydown", (e) => {
   }
 });
 
+// 🔍 Live city suggestions from Teleport API
 input.addEventListener("input", async () => {
-  const query = input.value;
+  const query = input.value.trim();
   if (query.length < 2) {
     suggestionsList.style.display = "none";
     return;
   }
 
-  const res = await fetch(`https://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=5&namePrefix=${query}`);
-  const data = await res.json();
-  suggestionsList.innerHTML = "";
-  data.data.forEach((city) => {
-    const li = document.createElement("li");
-    li.textContent = `${city.city}, ${city.countryCode}`;
-    li.onclick = () => {
-      input.value = li.textContent;
+  try {
+    const res = await fetch(`https://api.teleport.org/api/cities/?search=${query}`);
+    const data = await res.json();
+    suggestionsList.innerHTML = "";
+
+    const cities = data._embedded["city:search-results"].slice(0, 5);
+
+    if (cities.length === 0) {
       suggestionsList.style.display = "none";
-    };
-    suggestionsList.appendChild(li);
-  });
-  suggestionsList.style.display = "block";
+      return;
+    }
+
+    cities.forEach((item) => {
+      const li = document.createElement("li");
+      li.textContent = item.matching_full_name;
+      li.onclick = () => {
+        input.value = li.textContent;
+        suggestionsList.style.display = "none";
+      };
+      suggestionsList.appendChild(li);
+    });
+
+    suggestionsList.style.display = "block";
+  } catch (err) {
+    console.error("City autocomplete error:", err);
+    suggestionsList.style.display = "none";
+  }
 });
 
+// 🌗 Dark mode toggle
 document.getElementById("toggleMode").addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
 });
 
+// 🌤️ Get weather + forecast
 async function getWeather(cityOverride = null) {
   const city = cityOverride || input.value;
   if (!city) return;
@@ -57,6 +75,7 @@ async function getWeather(cityOverride = null) {
     const weatherData = await weatherRes.json();
     const forecastData = await forecastRes.json();
 
+    // ☀️ Show current weather
     document.getElementById("weatherResult").innerHTML = `
       <h2>${weatherData.name}, ${weatherData.sys.country}</h2>
       <p>Temperature: ${weatherData.main.temp}°C</p>
@@ -67,8 +86,10 @@ async function getWeather(cityOverride = null) {
       <img src="https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png" alt="icon"/>
     `;
 
+    // 📆 5-Day Forecast (every 8th 3-hour reading)
     const forecastEl = document.getElementById("forecast");
     forecastEl.innerHTML = "";
+
     for (let i = 0; i < forecastData.list.length; i += 8) {
       const day = forecastData.list[i];
       const date = new Date(day.dt * 1000).toDateString();
@@ -82,6 +103,7 @@ async function getWeather(cityOverride = null) {
       `;
     }
 
+    // 📌 Add to history
     if (!history.includes(city)) {
       history.unshift(city);
       updateHistory();
@@ -94,6 +116,7 @@ async function getWeather(cityOverride = null) {
   }
 }
 
+// 🕘 Show search history
 function updateHistory() {
   const ul = document.getElementById("searchHistory");
   ul.innerHTML = "";
