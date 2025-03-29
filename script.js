@@ -1,8 +1,36 @@
 const apiKey = "05b81f8b80065742683e5d0cd6632534";
 let history = [];
 
-document.getElementById("cityInput").addEventListener("keydown", function (e) {
-  if (e.key === "Enter") getWeather();
+const input = document.getElementById("cityInput");
+const suggestionsList = document.getElementById("suggestions");
+
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    getWeather();
+    suggestionsList.style.display = "none";
+  }
+});
+
+input.addEventListener("input", async () => {
+  const query = input.value;
+  if (query.length < 2) {
+    suggestionsList.style.display = "none";
+    return;
+  }
+
+  const res = await fetch(`https://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=5&namePrefix=${query}`);
+  const data = await res.json();
+  suggestionsList.innerHTML = "";
+  data.data.forEach((city) => {
+    const li = document.createElement("li");
+    li.textContent = `${city.city}, ${city.countryCode}`;
+    li.onclick = () => {
+      input.value = li.textContent;
+      suggestionsList.style.display = "none";
+    };
+    suggestionsList.appendChild(li);
+  });
+  suggestionsList.style.display = "block";
 });
 
 document.getElementById("toggleMode").addEventListener("click", () => {
@@ -10,11 +38,10 @@ document.getElementById("toggleMode").addEventListener("click", () => {
 });
 
 async function getWeather(cityOverride = null) {
-  const city = cityOverride || document.getElementById("cityInput").value;
+  const city = cityOverride || input.value;
   if (!city) return;
 
-  const loadingEl = document.getElementById("loading");
-  loadingEl.style.display = "block";
+  document.getElementById("loading").style.display = "block";
 
   try {
     const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
@@ -30,7 +57,6 @@ async function getWeather(cityOverride = null) {
     const weatherData = await weatherRes.json();
     const forecastData = await forecastRes.json();
 
-    // Display current weather
     document.getElementById("weatherResult").innerHTML = `
       <h2>${weatherData.name}, ${weatherData.sys.country}</h2>
       <p>Temperature: ${weatherData.main.temp}°C</p>
@@ -41,10 +67,8 @@ async function getWeather(cityOverride = null) {
       <img src="https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png" alt="icon"/>
     `;
 
-    // Display simplified 5-day forecast
     const forecastEl = document.getElementById("forecast");
     forecastEl.innerHTML = "";
-
     for (let i = 0; i < forecastData.list.length; i += 8) {
       const day = forecastData.list[i];
       const date = new Date(day.dt * 1000).toDateString();
@@ -58,16 +82,15 @@ async function getWeather(cityOverride = null) {
       `;
     }
 
-    // Add to history
     if (!history.includes(city)) {
       history.unshift(city);
       updateHistory();
     }
-  } catch (error) {
-    document.getElementById("weatherResult").innerHTML = `<p id="errorMessage">${error.message}</p>`;
+  } catch (err) {
+    document.getElementById("weatherResult").innerHTML = `<p id="errorMessage">${err.message}</p>`;
     document.getElementById("forecast").innerHTML = "";
   } finally {
-    loadingEl.style.display = "none";
+    document.getElementById("loading").style.display = "none";
   }
 }
 

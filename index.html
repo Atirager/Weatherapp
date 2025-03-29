@@ -10,15 +10,20 @@
 </head>
 <body>
   <div class="weather-container">
-    <h1>Weather App</h1>
-    <button id="toggleMode">Toggle Dark Mode</button>
-    <input type="text" id="cityInput" placeholder="Enter city name" />
-    <button onclick="getWeather()">Get Weather</button>
+    <h1>🌤️ Weather App</h1>
+    <button id="toggleMode">🌓 Toggle Dark Mode</button>
+    
+    <div class="input-group">
+      <input type="text" id="cityInput" placeholder="Search for a city..." autocomplete="off" />
+      <ul id="suggestions"></ul>
+      <button onclick="getWeather()">🔍 Get Weather</button>
+    </div>
+
     <div id="loading">Loading...</div>
     <div id="weatherResult"></div>
 
     <div id="forecastContainer">
-      <h3>10-Day Forecast</h3>
+      <h3>5-Day Forecast</h3>
       <div id="forecast"></div>
     </div>
 
