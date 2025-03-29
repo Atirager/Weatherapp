@@ -7,12 +7,15 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="weather-icon.png" />
   <link rel="manifest" href="manifest.json" />
+
+  <!-- LottieFiles player for animated icons -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
 <body>
   <div class="weather-container">
     <h1>🌤️ Weather App</h1>
     <button id="toggleMode">🌓 Toggle Dark Mode</button>
-    
+
     <div class="input-group">
       <input type="text" id="cityInput" placeholder="Search for a city..." autocomplete="off" />
       <ul id="suggestions"></ul>
@@ -20,6 +23,9 @@
     </div>
 
     <div id="loading">Loading...</div>
+
+    <lottie-player id="weatherIcon" autoplay loop style="width: 150px; margin: 20px auto; display: none;"></lottie-player>
+
     <div id="weatherResult"></div>
 
     <div id="forecastContainer">

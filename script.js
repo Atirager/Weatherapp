@@ -1,10 +1,13 @@
-const apiKey = "05b81f8b80065742683e5d0cd6632534"; // OpenWeatherMap API key
-let history = [];
+const apiKey = "05b81f8b80065742683e5d0cd6632534";
+let history = JSON.parse(localStorage.getItem("searchHistory")) || [];
 
 const input = document.getElementById("cityInput");
 const suggestionsList = document.getElementById("suggestions");
+const weatherIcon = document.getElementById("weatherIcon");
 
-// ENTER key triggers search
+updateHistory(); // Load history when app starts
+
+// Enter key triggers search
 input.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     getWeather();
@@ -12,7 +15,7 @@ input.addEventListener("keydown", (e) => {
   }
 });
 
-// 🔍 City autocomplete using GeoDB Cities API (RapidAPI)
+// City suggestions using GeoDB + RapidAPI
 input.addEventListener("input", async () => {
   const query = input.value.trim();
   if (query.length < 2) {
@@ -24,7 +27,7 @@ input.addEventListener("input", async () => {
     const res = await fetch(`https://wft-geo-db.p.rapidapi.com/v1/geo/cities?limit=5&namePrefix=${query}`, {
       method: "GET",
       headers: {
-        "X-RapidAPI-Key": "9828ac0080msh955cea759b9097fp1fda40jsnd9b57c63454d", // ← Your RapidAPI key
+        "X-RapidAPI-Key": "9828ac0080msh955cea759b9097fp1fda40jsnd9b57c63454d",
         "X-RapidAPI-Host": "wft-geo-db.p.rapidapi.com"
       }
     });
@@ -32,14 +35,7 @@ input.addEventListener("input", async () => {
     const data = await res.json();
     suggestionsList.innerHTML = "";
 
-    const cities = data.data;
-
-    if (cities.length === 0) {
-      suggestionsList.style.display = "none";
-      return;
-    }
-
-    cities.forEach((city) => {
+    data.data.forEach((city) => {
       const li = document.createElement("li");
       li.textContent = `${city.city}, ${city.country}`;
       li.onclick = () => {
@@ -51,17 +47,16 @@ input.addEventListener("input", async () => {
 
     suggestionsList.style.display = "block";
   } catch (err) {
-    console.error("City autocomplete error:", err);
-    suggestionsList.style.display = "none";
+    console.error("Autocomplete error:", err);
   }
 });
 
-// 🌗 Dark mode toggle
+// Dark mode toggle
 document.getElementById("toggleMode").addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
 });
 
-// 🌤️ Get current weather + forecast
+// Fetch weather and forecast
 async function getWeather(cityOverride = null) {
   const city = cityOverride || input.value;
   if (!city) return;
@@ -82,7 +77,7 @@ async function getWeather(cityOverride = null) {
     const weatherData = await weatherRes.json();
     const forecastData = await forecastRes.json();
 
-    // Display current weather
+    // Show current weather
     document.getElementById("weatherResult").innerHTML = `
       <h2>${weatherData.name}, ${weatherData.sys.country}</h2>
       <p>Temperature: ${weatherData.main.temp}°C</p>
@@ -90,17 +85,18 @@ async function getWeather(cityOverride = null) {
       <p>Humidity: ${weatherData.main.humidity}%</p>
       <p>Wind Speed: ${weatherData.wind.speed} m/s</p>
       <p>Condition: ${weatherData.weather[0].main}</p>
-      <img src="https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png" alt="icon"/>
     `;
 
-    // Display 5-day forecast (every 8th 3-hour reading)
+    // Set animated icon + background
+    setAnimatedIcon(weatherData.weather[0].main);
+    setWeatherBackground(weatherData.weather[0].main);
+
+    // Show 5-day forecast
     const forecastEl = document.getElementById("forecast");
     forecastEl.innerHTML = "";
-
     for (let i = 0; i < forecastData.list.length; i += 8) {
       const day = forecastData.list[i];
       const date = new Date(day.dt * 1000).toDateString();
-
       forecastEl.innerHTML += `
         <div class="forecast-day">
           <p>${date}</p>
@@ -110,27 +106,79 @@ async function getWeather(cityOverride = null) {
       `;
     }
 
-    // Add to search history
+    // Save to search history
     if (!history.includes(city)) {
       history.unshift(city);
+      history = history.slice(0, 5); // keep last 5
       updateHistory();
     }
   } catch (err) {
     document.getElementById("weatherResult").innerHTML = `<p id="errorMessage">${err.message}</p>`;
     document.getElementById("forecast").innerHTML = "";
+    weatherIcon.style.display = "none";
   } finally {
     document.getElementById("loading").style.display = "none";
   }
 }
 
-// 🔁 Update search history
+// Update the history in UI + localStorage
 function updateHistory() {
   const ul = document.getElementById("searchHistory");
   ul.innerHTML = "";
-  history.slice(0, 5).forEach((city) => {
+  history.forEach((city) => {
     const li = document.createElement("li");
     li.textContent = city;
     li.onclick = () => getWeather(city);
     ul.appendChild(li);
   });
+  localStorage.setItem("searchHistory", JSON.stringify(history));
+}
+
+// Set dynamic background color
+function setWeatherBackground(condition) {
+  const body = document.body;
+  switch (condition.toLowerCase()) {
+    case "clear":
+      body.style.background = "linear-gradient(to top, #fceabb, #f8b500)";
+      break;
+    case "clouds":
+      body.style.background = "linear-gradient(to right, #bdc3c7, #2c3e50)";
+      break;
+    case "rain":
+    case "drizzle":
+      body.style.background = "linear-gradient(to right, #4e54c8, #8f94fb)";
+      break;
+    case "thunderstorm":
+      body.style.background = "linear-gradient(to right, #0f2027, #203a43, #2c5364)";
+      break;
+    case "snow":
+      body.style.background = "linear-gradient(to right, #e6dada, #274046)";
+      break;
+    case "mist":
+    case "fog":
+    case "haze":
+      body.style.background = "linear-gradient(to right, #3e5151, #decba4)";
+      break;
+    default:
+      body.style.background = "linear-gradient(to right, #667eea, #764ba2)";
+  }
+}
+
+// Set animated icon using LottieFiles
+function setAnimatedIcon(condition) {
+  const iconMap = {
+    clear: "https://assets4.lottiefiles.com/packages/lf20_jzcldbm3.json",
+    clouds: "https://assets2.lottiefiles.com/packages/lf20_qp1q7mct.json",
+    rain: "https://assets2.lottiefiles.com/packages/lf20_jmBauI.json",
+    drizzle: "https://assets2.lottiefiles.com/packages/lf20_jmBauI.json",
+    thunderstorm: "https://assets2.lottiefiles.com/private_files/lf30_tll0j4bb.json",
+    snow: "https://assets2.lottiefiles.com/packages/lf20_wq03oz.json",
+    mist: "https://assets2.lottiefiles.com/packages/lf20_kOfPKE.json",
+    fog: "https://assets2.lottiefiles.com/packages/lf20_kOfPKE.json",
+    haze: "https://assets2.lottiefiles.com/packages/lf20_kOfPKE.json",
+  };
+
+  const iconURL = iconMap[condition.toLowerCase()] || iconMap["clear"];
+  weatherIcon.setAttribute("src", iconURL);
+  weatherIcon.style.display = "block";
 }
