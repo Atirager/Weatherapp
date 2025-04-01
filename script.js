@@ -52,10 +52,64 @@ function renderForecast(data) {
   }
 }
 
+
 function renderHourlyChart(data) {
+  const chartCanvas = document.getElementById("hourlyChart");
+  if (!chartCanvas) {
+    console.warn("Chart canvas not found.");
+    return;
+  }
+
+  const ctx = chartCanvas.getContext("2d");
+  const now = Date.now();
+
+  // 3 hours before now and 10 hours after now (in ms)
+  const filtered = data.list.filter(d => {
+    const timestamp = d.dt * 1000;
+    return timestamp >= (now - 3 * 3600 * 1000) && timestamp <= (now + 10 * 3600 * 1000);
+  });
+
+  if (filtered.length === 0) {
+    console.warn("No data available for hourly forecast.");
+    return;
+  }
+
+  const labels = filtered.map(d => {
+    const date = new Date(d.dt * 1000);
+    return `${date.getHours().toString().padStart(2, "0")}:00`;
+  });
+
+  const temps = filtered.map(d => Math.round(d.main.temp));
+
+  if (window.hourlyChart) window.hourlyChart.destroy();
+
+  window.hourlyChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Temp (°C)",
+        data: temps,
+        backgroundColor: "rgba(0,123,255,0.6)"
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: false
+        }
+      }
+    }
+  });
+}
+
   const ctx = document.getElementById("hourlyChart").getContext("2d");
-  const now = Date.now() / 1000;
-  const filtered = data.list.filter(d => Math.abs(d.dt - now) < 13 * 3600);
+  const now = Date.now();
+  const filtered = data.list.filter(d => {
+    const timeDiff = d.dt * 1000 - now;
+    return timeDiff > -3 * 3600 * 1000 && timeDiff < 10 * 3600 * 1000;
+  });
 
   const labels = filtered.map(d => {
     const hour = new Date(d.dt * 1000).getHours();
@@ -85,3 +139,12 @@ function renderHourlyChart(data) {
     }
   });
 }
+
+// Add Enter key event for city search
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("cityInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      getWeather();
+    }
+  });
+});
