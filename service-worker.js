@@ -12,9 +12,6 @@ self.addEventListener("install", (e) => {
     )
   );
 });
-
 self.addEventListener("fetch", (e) => {
-  e.respondWith(
-    caches.match(e.request).then((resp) => resp || fetch(e.request))
-  );
+  e.respondWith(caches.match(e.request).then((resp) => resp || fetch(e.request)));
 });

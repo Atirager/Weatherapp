@@ -13,7 +13,6 @@
 <body>
   <div class="weather-container">
     <h1>🌤️ Weather App</h1>
-
     <div class="controls">
       <button id="toggleMode">🌓</button>
       <select id="unitSelect">
@@ -21,25 +20,19 @@
         <option value="imperial">°F</option>
       </select>
     </div>
-
     <div class="input-group">
       <input type="text" id="cityInput" placeholder="Search city..." autocomplete="off" />
       <ul id="suggestions"></ul>
       <button onclick="getWeather()">🔍</button>
     </div>
-
     <div id="loading">Loading...</div>
-
     <div id="weatherResult"></div>
-
     <h3>5-Day Forecast</h3>
     <canvas id="tempChart"></canvas>
     <div id="forecast"></div>
-
     <h3>Search History</h3>
     <ul id="searchHistory"></ul>
   </div>
-
   <script src="script.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
