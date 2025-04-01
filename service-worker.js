@@ -6,12 +6,11 @@ self.addEventListener("install", (e) => {
         "./index.html",
         "./style.css",
         "./script.js",
-        "./manifest.json",
-        "./weather-icon.png"
+        "./manifest.json"
       ])
     )
   );
 });
 self.addEventListener("fetch", (e) => {
-  e.respondWith(caches.match(e.request).then((resp) => resp || fetch(e.request)));
+  e.respondWith(caches.match(e.request).then((r) => r || fetch(e.request)));
 });

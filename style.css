@@ -1,8 +1,60 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #e9f4fc;
+  color: #333;
+  padding: 1rem;
+}
+.weather-container {
+  max-width: 550px;
+  margin: auto;
+  background: #f0f7ff;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.08);
+}
+.input-group, .controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+input {
+  flex: 1;
+  padding: 0.5rem;
+}
+button {
+  padding: 0.5rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+#suggestions {
+  list-style: none;
+  padding: 0;
+  background: white;
+  position: absolute;
+  z-index: 10;
+  width: 100%;
+}
+#suggestions li {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+#forecast {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.forecast-day {
+  background: #fff;
+  padding: 0.5rem;
+  border-radius: 6px;
+  flex: 1 1 30%;
+  text-align: center;
+}
 #loading {
   display: none;
   text-align: center;
-  margin-top: 0.5rem;
-  font-style: italic;
-  color: #888;
+  color: gray;
+  margin: 1rem 0;
 }
-/* Plus all other styles, kept minimal here for brevity */
