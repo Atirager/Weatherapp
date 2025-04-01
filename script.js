@@ -1,4 +1,3 @@
-
 window.getWeather = async function(cityOverride = null) {
   const input = document.getElementById("cityInput");
   const city = cityOverride || input.value.trim();
